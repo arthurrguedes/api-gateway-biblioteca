@@ -222,6 +222,80 @@ const swaggerOptions = {
                     parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
                     responses: { 200: { description: 'Removido com sucesso' } }
                 }
+            },
+            '/books': {
+                get: {
+                    tags: ['Catálogo'],
+                    summary: 'Listar todos os livros',
+                    responses: { 200: { description: 'Lista de livros completa' } }
+                },
+                post: {
+                    tags: ['Catálogo'],
+                    summary: 'Adicionar novo livro',
+                    requestBody: {
+                        content: { 
+                            'application/json': { 
+                                schema: { 
+                                    type: 'object', 
+                                    properties: { 
+                                        titulo: { type: 'string' }, 
+                                        ano: { type: 'integer' },
+                                        editora: { type: 'string' },
+                                        isbn: { type: 'string' },
+                                        edicao: { type: 'string' }
+                                    } 
+                                } 
+                            } 
+                        }
+                    },
+                    responses: { 201: { description: 'Livro criado' } }
+                }
+            },
+            '/books/{id}': {
+                get: {
+                    tags: ['Catálogo'],
+                    summary: 'Detalhes de um livro',
+                    parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+                    responses: { 200: { description: 'Dados do livro' } }
+                },
+                put: {
+                    tags: ['Catálogo'],
+                    summary: 'Atualizar dados do livro',
+                    parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+                    requestBody: {
+                        content: { 
+                            'application/json': { 
+                                schema: { 
+                                    type: 'object', 
+                                    properties: { 
+                                        titulo: { type: 'string' }, 
+                                        ano: { type: 'integer' },
+                                        editora: { type: 'string' },
+                                        isbn: { type: 'string' }
+                                    } 
+                                } 
+                            } 
+                        }
+                    },
+                    responses: { 200: { description: 'Atualizado' } }
+                },
+                delete: {
+                    tags: ['Catálogo'],
+                    summary: 'Deletar livro',
+                    parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+                    responses: { 200: { description: 'Deletado' } }
+                }
+            },
+            '/books/{id}/stock': {
+                put: {
+                    tags: ['Catálogo'],
+                    summary: 'Atualizar estoque do livro',
+                    parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+                    requestBody: {
+                        content: { 'application/json': { schema: { type: 'object', properties: { novaQuantidade: { type: 'integer' } } } } }
+                    },
+                    responses: { 200: { description: 'Estoque atualizado' } }
+                }
             }
         }
     },
@@ -252,9 +326,19 @@ const bibliotecariosProxy = createProxyMiddleware({
     onError: (err, req, res) => res.status(502).json({ error: "Erro Users Service" })
 });
 
+const catalogProxy = createProxyMiddleware({
+    target: 'http://127.0.0.1:4002',
+    changeOrigin: true,
+    // O serviço espera /books, mas o gateway remove o prefixo ao encaminhar.
+    // Então readicionamos /books/ na frente.
+    pathRewrite: { '^/': '/books/' }, 
+    onError: (err, req, res) => res.status(502).json({ error: "Erro Catalog Service" })
+});
+
 // Aplica o proxy
 app.use('/users', usersProxy);
 app.use('/bibliotecarios', bibliotecariosProxy);
+app.use('/books', catalogProxy);
 
 // Rota raiz
 app.get('/', (req, res) => {
