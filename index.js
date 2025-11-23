@@ -344,7 +344,56 @@ const swaggerOptions = {
                     responses: { 200: { description: 'Cancelada' } }
                 }
             },
-        }
+        },
+        '/emprestimos': {
+                get: {
+                    tags: ['Empréstimos'],
+                    summary: 'Listar todos os empréstimos (Admin)',
+                    security: [{ bearerAuth: [] }],
+                    responses: { 200: { description: 'Lista retornada' } }
+                },
+                post: {
+                    tags: ['Empréstimos'],
+                    summary: 'Gerar empréstimo a partir de reserva',
+                    security: [{ bearerAuth: [] }],
+                    requestBody: {
+                        content: { 'application/json': { schema: { type: 'object', properties: { idReserva: { type: 'integer' } } } } }
+                    },
+                    responses: { 201: { description: 'Empréstimo criado' } }
+                }
+            },
+            '/emprestimos/meus': {
+                get: {
+                    tags: ['Empréstimos'],
+                    summary: 'Meus empréstimos',
+                    security: [{ bearerAuth: [] }],
+                    responses: { 200: { description: 'Lista do usuário' } }
+                }
+            },
+            '/emprestimos/{id}/devolver': {
+                put: {
+                    tags: ['Empréstimos'],
+                    summary: 'Realizar devolução do livro',
+                    security: [{ bearerAuth: [] }],
+                    parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+                    responses: { 200: { description: 'Devolvido com sucesso' } }
+                }
+            },
+            '/emprestimos/{id}': {
+                get: {
+                    tags: ['Empréstimos'],
+                    summary: 'Buscar empréstimo por ID',
+                    parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+                    responses: { 200: { description: 'Dados encontrados' } }
+                },
+                delete: {
+                    tags: ['Empréstimos'],
+                    summary: 'Apagar registro de empréstimo',
+                    security: [{ bearerAuth: [] }],
+                    parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+                    responses: { 200: { description: 'Apagado' } }
+                }
+            },
     },
     apis: [], 
 };
@@ -389,11 +438,19 @@ const reservasProxy = createProxyMiddleware({
     onError: (err, req, res) => res.status(502).json({ error: "Erro Reservation Service" })
 });
 
+const emprestimosProxy = createProxyMiddleware({
+    target: 'http://127.0.0.1:4004',
+    changeOrigin: true,
+    pathRewrite: { '^/': '/emprestimos'},
+    onError: (err, req, res) => res.status(502).json({ error: "Erro Emprestimos Service" })
+});
+
 // Aplica o proxy
 app.use('/users', usersProxy);
 app.use('/bibliotecarios', bibliotecariosProxy);
 app.use('/books', catalogProxy);
 app.use('/reservas', reservasProxy);
+app.use('/emprestimos', emprestimosProxy);
 
 // Rota raiz
 app.get('/', (req, res) => {
