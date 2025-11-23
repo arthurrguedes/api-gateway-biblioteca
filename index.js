@@ -296,7 +296,54 @@ const swaggerOptions = {
                     },
                     responses: { 200: { description: 'Estoque atualizado' } }
                 }
-            }
+            },
+            '/reservas': {
+                post: {
+                    tags: ['Reservas'],
+                    summary: 'Criar reserva (ou entrar na fila)',
+                    security: [{ bearerAuth: [] }],
+                    requestBody: {
+                        content: { 'application/json': { schema: { type: 'object', properties: { idLivro: { type: 'integer' } } } } }
+                    },
+                    responses: { 
+                        201: { description: 'Reserva criada ou entrou na fila' },
+                        409: { description: 'Erro de disponibilidade' }
+                    }
+                },
+                get: {
+                    tags: ['Reservas'],
+                    summary: 'Listar todas as reservas (Admin)',
+                    security: [{ bearerAuth: [] }],
+                    responses: { 200: { description: 'Lista retornada' } }
+                }
+            },
+            '/reservas/my': {
+                get: {
+                    tags: ['Reservas'],
+                    summary: 'Minhas reservas',
+                    security: [{ bearerAuth: [] }],
+                    responses: { 200: { description: 'Lista do usuário' } }
+                }
+            },
+            '/reservas/{id}': {
+                put: {
+                    tags: ['Reservas'],
+                    summary: 'Atualizar reserva',
+                    security: [{ bearerAuth: [] }],
+                    parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+                    requestBody: {
+                        content: { 'application/json': { schema: { type: 'object', properties: { statusReserva: { type: 'string' }, prazoReserva: { type: 'string' } } } } }
+                    },
+                    responses: { 200: { description: 'Atualizado' } }
+                },
+                delete: {
+                    tags: ['Reservas'],
+                    summary: 'Cancelar reserva',
+                    security: [{ bearerAuth: [] }],
+                    parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+                    responses: { 200: { description: 'Cancelada' } }
+                }
+            },
         }
     },
     apis: [], 
@@ -335,10 +382,18 @@ const catalogProxy = createProxyMiddleware({
     onError: (err, req, res) => res.status(502).json({ error: "Erro Catalog Service" })
 });
 
+const reservasProxy = createProxyMiddleware({
+    target: 'http://127.0.0.1:4003',
+    changeOrigin: true,
+    pathRewrite: { '^/': '/reservas'}, 
+    onError: (err, req, res) => res.status(502).json({ error: "Erro Reservation Service" })
+});
+
 // Aplica o proxy
 app.use('/users', usersProxy);
 app.use('/bibliotecarios', bibliotecariosProxy);
 app.use('/books', catalogProxy);
+app.use('/reservas', reservasProxy);
 
 // Rota raiz
 app.get('/', (req, res) => {
