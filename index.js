@@ -434,14 +434,14 @@ const catalogProxy = createProxyMiddleware({
 const reservasProxy = createProxyMiddleware({
     target: 'http://127.0.0.1:4003',
     changeOrigin: true,
-    pathRewrite: { '^/': '/reservas'}, 
+    pathRewrite: { '^/': '/reservas/'}, 
     onError: (err, req, res) => res.status(502).json({ error: "Erro Reservation Service" })
 });
 
 const emprestimosProxy = createProxyMiddleware({
     target: 'http://127.0.0.1:4004',
     changeOrigin: true,
-    pathRewrite: { '^/': '/emprestimos'},
+    pathRewrite: { '^/': '/emprestimos/'},
     onError: (err, req, res) => res.status(502).json({ error: "Erro Emprestimos Service" })
 });
 
