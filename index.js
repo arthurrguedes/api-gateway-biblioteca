@@ -132,7 +132,7 @@ const swaggerOptions = {
                     responses: { 200: { description: 'Deletado com sucesso' } }
                 }
             },
-            // --- ROTAS DE BIBLIOTECÁRIOS ---
+            // Rotas Bibliotecário
             '/bibliotecarios/login': {
                 post: {
                     tags: ['Bibliotecários'],
@@ -402,7 +402,7 @@ const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Definição dos Proxys
-// Proxy específico para Usuários
+// Proxy específico para usuários
 const usersProxy = createProxyMiddleware({
     target: 'http://127.0.0.1:3006',
     changeOrigin: true,
@@ -412,7 +412,7 @@ const usersProxy = createProxyMiddleware({
     onError: (err, req, res) => res.status(502).json({ error: "Erro Users Service" })
 });
 
-// Proxy específico para Bibliotecários
+// Proxy específico para bibliotecários
 const bibliotecariosProxy = createProxyMiddleware({
     target: 'http://127.0.0.1:3006',
     changeOrigin: true,
@@ -425,8 +425,6 @@ const bibliotecariosProxy = createProxyMiddleware({
 const catalogProxy = createProxyMiddleware({
     target: 'http://127.0.0.1:4002',
     changeOrigin: true,
-    // O serviço espera /books, mas o gateway remove o prefixo ao encaminhar.
-    // Então readicionamos /books/ na frente.
     pathRewrite: { '^/': '/books/' }, 
     onError: (err, req, res) => res.status(502).json({ error: "Erro Catalog Service" })
 });
