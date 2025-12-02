@@ -7,6 +7,12 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const usersUrl = process.env.USERS_API_URL || 'http://127.0.0.1:3006';
+const catalogoUrl = process.env.CATALOG_API_URL || 'http://127.0.0.1:4002';
+const reservasUrl = process.env.RESERVAS_API_URL || 'http://127.0.0.1:4003';
+const emprestimosUrl = process.env.EMPRESTIMOS_API_URL || 'http://127.0.0.1:4004';
+const relatoriosUrl = process.env.RELATORIOS_API_URL || 'http://127.0.0.1:4009';
+
 
 // Configuração de CORS
 app.use(cors({
@@ -404,7 +410,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // Definição dos Proxys
 // Proxy específico para usuários
 const usersProxy = createProxyMiddleware({
-    target: 'http://127.0.0.1:3006',
+    target: usersUrl,
     changeOrigin: true,
     pathRewrite: {
         '^/': '/users/', 
@@ -414,7 +420,7 @@ const usersProxy = createProxyMiddleware({
 
 // Proxy específico para bibliotecários
 const bibliotecariosProxy = createProxyMiddleware({
-    target: 'http://127.0.0.1:3006',
+    target: usersUrl,
     changeOrigin: true,
     pathRewrite: {
         '^/': '/bibliotecarios/', // Readiciona o prefixo
@@ -423,21 +429,21 @@ const bibliotecariosProxy = createProxyMiddleware({
 });
 
 const catalogProxy = createProxyMiddleware({
-    target: 'http://127.0.0.1:4002',
+    target: catalogoUrl,
     changeOrigin: true,
     pathRewrite: { '^/': '/books/' }, 
     onError: (err, req, res) => res.status(502).json({ error: "Erro Catalog Service" })
 });
 
 const reservasProxy = createProxyMiddleware({
-    target: 'http://127.0.0.1:4003',
+    target: reservasUrl,
     changeOrigin: true,
     pathRewrite: { '^/': '/reservas/'}, 
     onError: (err, req, res) => res.status(502).json({ error: "Erro Reservation Service" })
 });
 
 const emprestimosProxy = createProxyMiddleware({
-    target: 'http://127.0.0.1:4004',
+    target: emprestimosUrl,
     changeOrigin: true,
     pathRewrite: { '^/': '/emprestimos/'},
     onError: (err, req, res) => res.status(502).json({ error: "Erro Emprestimos Service" })
